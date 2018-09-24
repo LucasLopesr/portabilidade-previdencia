@@ -14,7 +14,7 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import java.util.*
 
-object AceitarFundoPrevidenciaFlow {
+object AceitarSolicitacaoFlow {
 
     @InitiatingFlow
     @StartableByRPC
