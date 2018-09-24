@@ -19,6 +19,8 @@ object RecusarSolicitacaoFlow {
     @InitiatingFlow
     @StartableByRPC
     class Initiator(val idSolicitacao: UUID): FlowLogic<SignedTransaction>() {
+
+        @Suspendable
         override fun call(): SignedTransaction {
             val solicitacaoInput =
                     serviceHub.vaultService.queryBy<SolicitacaoState>(

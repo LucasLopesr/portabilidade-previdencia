@@ -1,5 +1,6 @@
 package br.com.portabilidade.flow
 
+import br.com.portabilidade.contract.FundoPrevidenciaContract
 import br.com.portabilidade.contract.SolicitacaoContract
 import br.com.portabilidade.model.StatusSolicitacao
 import br.com.portabilidade.state.FundoPrevidenciaState
@@ -19,6 +20,8 @@ object AceitarSolicitacaoFlow {
     @InitiatingFlow
     @StartableByRPC
     class Initiator(val idSolicitacao: UUID): FlowLogic<SignedTransaction>() {
+
+        @Suspendable
         override fun call(): SignedTransaction {
             // Buscar a solicitacao
             val solicitacaoInput =
@@ -44,11 +47,14 @@ object AceitarSolicitacaoFlow {
             val solicitacaoOutput = solicitacaoInput.state.data.copy(
                     statusSolicitacao = StatusSolicitacao.ACEITO )
                 // construir o comando
-            val comando = Command(SolicitacaoContract.Commands.Aceitar(),
+            val aceitar = Command(SolicitacaoContract.Commands.Aceitar(),
+                    solicitacaoOutput.participants.map { it.owningKey })
+            val portar = Command(FundoPrevidenciaContract.Commands.Portar(),
                     solicitacaoOutput.participants.map { it.owningKey })
 
             val txBuilder = TransactionBuilder(notary)
-                    .addCommand(comando)
+                    .addCommand(aceitar)
+                    .addCommand(portar)
                     .addInputState(solicitacaoInput)
                     .addInputState(fundoInput)
                     .addOutputState(solicitacaoOutput,

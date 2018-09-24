@@ -13,6 +13,7 @@ class FundoPrevidenciaContract: Contract {
 
         when (comando.value) {
             is Commands.Create -> verifyCreate(tx)
+            is Commands.Portar -> verifyPortar(tx)
             else -> throw IllegalArgumentException("Comando ${comando.value::class.java.canonicalName} não reconhecido.")
         }
 
@@ -38,8 +39,23 @@ class FundoPrevidenciaContract: Contract {
         }
     }
 
+    fun verifyPortar(tx: LedgerTransaction) {
+        requireThat {
+            val inputFundo = tx.inputsOfType<FundoPrevidenciaState>().single()
+            val outputFundo = tx.outputsOfType<FundoPrevidenciaState>().single()
+
+            "O dono do Fundo deve ser alterado." using (
+                    inputFundo.dono != outputFundo.dono)
+            "Apenas o Dono do Fundo deve ser alterado." using (
+                    inputFundo.fundoPrevidencia == outputFundo.fundoPrevidencia
+                    )
+        }
+    }
+
+
     interface Commands: CommandData {
         class Create: Commands
+        class Portar: Commands
     }
 
 }

@@ -20,13 +20,14 @@ class SolicitacaoContract : Contract {
             else -> throw IllegalArgumentException("Comando desconhecido.")
         }
         requireThat {
+            val allParticipantsKeys = (tx.inputsOfType<SolicitacaoState>() + tx.outputsOfType())
+                    .flatMap {
+                        it.participants.map {
+                            it.owningKey
+                        }
+                    }
             "Todos os participantes devem assinar a transação." using
-                    (tx.inputsOfType<FundoPrevidenciaState>() + tx.outputsOfType())
-                            .flatMap {
-                                it.participants.map {
-                                    it.owningKey
-                                }
-                            }.containsAll(comando.signers)
+                    allParticipantsKeys.containsAll(comando.signers)
         }
     }
 
@@ -63,7 +64,6 @@ class SolicitacaoContract : Contract {
     fun verifyUpdate(tx: LedgerTransaction, novoStatus: StatusSolicitacao) {
         requireThat {
             verificarApenasUmInputEOutput<SolicitacaoState>(tx)
-            verificarApenasUmInputEOutput<FundoPrevidenciaState>(tx)
 
             "O Status da Solicitacao deveria ser SOLICITADO." using (
                     tx.inputsOfType<SolicitacaoState>().all {
@@ -89,6 +89,7 @@ class SolicitacaoContract : Contract {
     fun verifyAceitar(tx: LedgerTransaction) {
         requireThat {
             verifyUpdate(tx, StatusSolicitacao.ACEITO)
+            verificarApenasUmInputEOutput<FundoPrevidenciaState>(tx)
 
             val outputSolicitacao = tx.outputsOfType<SolicitacaoState>().single()
             val outputFundo = tx.outputsOfType<FundoPrevidenciaState>().single()

@@ -3,6 +3,7 @@ package br.com.portabilidade.flow
 import br.com.portabilidade.contract.FundoPrevidenciaContract
 import br.com.portabilidade.model.FundoPrevidencia
 import br.com.portabilidade.state.FundoPrevidenciaState
+import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.contracts.Command
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
@@ -17,6 +18,7 @@ object CriarFundoPrevidenciaFlow {
     @StartableByRPC
     class Initiator(val fundoPrevidencia: FundoPrevidencia): FlowLogic<SignedTransaction>() {
 
+        @Suspendable
         override fun call(): SignedTransaction {
             val notary = serviceHub.networkMapCache.notaryIdentities.first()
 
